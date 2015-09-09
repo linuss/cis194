@@ -13,12 +13,14 @@ x = P [1]
 getList :: Poly a -> [a]
 getList (P a) = a
 
+dropFirstZero :: (Eq a, Num a) => [a] -> [a]
+dropFirstZero [] = []
+dropFirstZero (n:ns) = if n == 0 then ns else (n:ns)
+
 instance (Num a, Eq a) => Eq (Poly a) where
-    (==) 
-      | length listA == length listB = listA == listB
-      | otherwise = undefined
-      where listA = getList (P a)
-            listB = getList (P b)
+    (==) p1 p2 = listA == listB
+        where listA = dropFirstZero (getList p1)
+              listB = dropFirstZero (getList p2)
  
 -- Exercise 3 -----------------------------------------
 
