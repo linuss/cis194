@@ -1,12 +1,12 @@
 {-# OPTIONS_GHC -Wall #-}
 module HW04 where
-
+import Data.List (intercalate)
 newtype Poly a = P [a]
 
 -- Exercise 1 -----------------------------------------
 
 x :: Num a => Poly a
-x = P [1] 
+x = P [1]
 
 -- Exercise 2 ----------------------------------------
 
@@ -21,11 +21,24 @@ instance (Num a, Eq a) => Eq (Poly a) where
     (==) p1 p2 = listA == listB
         where listA = dropFirstZero (getList p1)
               listB = dropFirstZero (getList p2)
- 
+
 -- Exercise 3 -----------------------------------------
 
+showTerm :: (Eq a, Num a, Show a) => (a,Int) -> String
+showTerm (0,0) = ""
+showTerm (c,0) = show c
+showTerm (1,1) = "x"
+showTerm (-1, 1) = "-x"
+showTerm (c, 1) = show c ++ "x"
+showTerm (1, e) = "x^" ++ show e
+showTerm (-1, e) = "-x^" ++ show e
+showTerm (c,e) = show c ++ "x^" ++ show e
+
 instance (Num a, Eq a, Show a) => Show (Poly a) where
-    show = undefined
+    show p1
+      | p1 == P [0] = "0"
+      | otherwise = intercalate " + " $ reverse $ map showTerm $ filter (\(c,_) -> c /= 0) $ zip (getList p1) [0..]
+
 
 -- Exercise 4 -----------------------------------------
 
