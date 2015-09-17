@@ -6,7 +6,7 @@ newtype Poly a = P [a]
 -- Exercise 1 -----------------------------------------
 
 x :: Num a => Poly a
-x = P [1]
+x = P [0,1]
 
 -- Exercise 2 ----------------------------------------
 
@@ -43,38 +43,55 @@ instance (Num a, Eq a, Show a) => Show (Poly a) where
 -- Exercise 4 -----------------------------------------
 
 plus :: Num a => Poly a -> Poly a -> Poly a
-plus = undefined
+plus p1 p2 = P (addLists (getList p1) (getList p2))
+             where addLists :: Num b => [b] -> [b] -> [b]
+                   addLists [] [] = []
+                   addLists a [] = a
+                   addLists [] b = b
+                   addLists (a:as) (b:bs) = (a + b) : addLists as bs
 
 -- Exercise 5 -----------------------------------------
 
 times :: Num a => Poly a -> Poly a -> Poly a
-times = undefined
+times p1 p2 = sum (multPol (getList p1) (getList p2) 0)
+              where multPol :: Num a => [a] -> [a] -> Int -> [Poly a]
+                    multPol [] _ _ = []
+                    multPol (a:as) ys n = (P ((replicate n 0) ++ (map (a *) ys))) : multPol as ys (n + 1)
+                
+
 
 -- Exercise 6 -----------------------------------------
 
 instance Num a => Num (Poly a) where
     (+) = plus
     (*) = times
-    negate      = undefined
-    fromInteger = undefined
+    negate p1 = P (map (* (-1)) (getList p1))
+    fromInteger n = P [fromInteger n]
     -- No meaningful definitions exist
     abs    = undefined
     signum = undefined
 
 -- Exercise 7 -----------------------------------------
 
-applyP :: Num a => Poly a -> a -> a
-applyP = undefined
+applyP :: (Num a) => Poly a -> a -> a
+applyP poly n = sum $ map (applyTerm n) (zip (getList poly) [0..])
+                where applyTerm :: (Num a) => a -> (a, Integer) -> a
+                      applyTerm o (c,e) = c * (o^e)
+                
 
 -- Exercise 8 -----------------------------------------
 
 class Num a => Differentiable a where
     deriv  :: a -> a
     nderiv :: Int -> a -> a
-    nderiv = undefined
+    nderiv n poly 
+      | n == 1 = deriv poly
+      | otherwise = nderiv (n -1) (deriv poly)
 
 -- Exercise 9 -----------------------------------------
 
 instance Num a => Differentiable (Poly a) where
-    deriv = undefined
+    deriv p1 = P $ go (getList p1)
+      where go [] = []
+            go (_:as) = zipWith (*) as (map fromInteger [1..])
 
