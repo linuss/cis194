@@ -68,17 +68,25 @@ randomVecR n (minRange, maxRange) = V.replicateM n (getRandomR (minRange,maxRang
 
 -- Exercise 5 -----------------------------------------
 
--- NOT DONE! :(
+swap :: (Int, Int) -> Vector a -> Vector a
+swap (i,j) vector = vector // [(i, (vector ! j)), (j, (vector ! i))]
+
+
 shuffle :: Vector a -> Rnd (Vector a)
 shuffle vector = do
-  to <- V.toList $ randomVecR (length vector) (0, length vector)
-  from <- [0..(length vector)]
-  return $ swapV to from vector
+  let from = V.reverse $ V.enumFromN 1 (n-1) 
+  to <- V.mapM getRandomR (V.zip (V.replicate n 0) from)
+  return $  V.foldr' swap vector (V.zip from to)
+  where n = length vector
 
 -- Exercise 6 -----------------------------------------
 
 partitionAt :: Ord a => Vector a -> Int -> (Vector a, a, Vector a)
-partitionAt = undefined
+partitionAt vector n 
+  | n > length vector || n < 0 = error "N is out of bounds"
+  | otherwise = (V.filter (\x -> x < y) vector, y, V.filter (\x -> x > y) vector)
+                where y = vector ! n
+  
 
 -- Exercise 7 -----------------------------------------
 
@@ -89,12 +97,28 @@ quicksort (x:xs) = quicksort [ y | y <- xs, y < x ]
                    <> (x : quicksort [ y | y <- xs, y >= x ])
 
 qsort :: Ord a => Vector a -> Vector a
-qsort = undefined
+qsort vector 
+ | null vector = V.empty
+ | otherwise = qsort [ y | y <- V.tail vector, y < V.head vector]
+                <> (cons (V.head vector) (qsort [ y | y <- V.tail vector, y >= V.head vector]))
 
 -- Exercise 8 -----------------------------------------
 
 qsortR :: Ord a => Vector a -> Rnd (Vector a)
-qsortR = undefined
+qsortR vector  
+  | null vector = return V.empty
+  | otherwise = do
+  pivotIndex <- getRandomR (0, (length vector) - 1)
+  let split = partitionAt vector pivotIndex
+  left <- qsortR $ first split
+  right <- qsortR $ third split
+  return $ left <> (cons (second split)right)
+  where first :: (Vector a, a, Vector a) -> Vector a
+        first (x,_,_) = x
+        second :: (Vector a, a, Vector a) -> a
+        second (_,x,_) = x
+        third :: (Vector a, a, Vector a) -> Vector a
+        third (_,_,x) = x
 
 -- Exercise 9 -----------------------------------------
 
