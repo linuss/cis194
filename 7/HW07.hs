@@ -104,6 +104,13 @@ qsort vector
 
 -- Exercise 8 -----------------------------------------
 
+first :: (Vector a, a, Vector a) -> Vector a
+first (x,_,_) = x
+second :: (Vector a, a, Vector a) -> a
+second (_,x,_) = x
+third :: (Vector a, a, Vector a) -> Vector a
+third (_,_,x) = x
+
 qsortR :: Ord a => Vector a -> Rnd (Vector a)
 qsortR vector  
   | null vector = return V.empty
@@ -112,37 +119,56 @@ qsortR vector
   let split = partitionAt vector pivotIndex
   left <- qsortR $ first split
   right <- qsortR $ third split
-  return $ left <> (cons (second split)right)
-  where first :: (Vector a, a, Vector a) -> Vector a
-        first (x,_,_) = x
-        second :: (Vector a, a, Vector a) -> a
-        second (_,x,_) = x
-        third :: (Vector a, a, Vector a) -> Vector a
-        third (_,_,x) = x
+  return $ left <> (cons (second split) right)
 
 -- Exercise 9 -----------------------------------------
 
 -- Selection
 select :: Ord a => Int -> Vector a -> Rnd (Maybe a)
-select = undefined
+select i vector
+  | (i > ((length vector) - 1)) || (i < 0) = return Nothing
+  | otherwise = do
+  pivotIndex <- getRandomR (0, (length vector) - 1)
+  let split = partitionAt vector pivotIndex
+  let l = first split
+  let r = third split
+  case compare i (length l) of LT -> select i l >>= \x -> return x
+                               EQ -> return $ Just $ second split
+                               GT -> select (i - (length l) - 1) r >>= \x -> return x
+
 
 -- Exercise 10 ----------------------------------------
 
 allCards :: Deck
-allCards = undefined
+allCards = [Card label suit | suit <- suits, label <- labels]
 
 newDeck :: Rnd Deck
-newDeck =  undefined
+newDeck =  shuffle allCards
 
 -- Exercise 11 ----------------------------------------
 
 nextCard :: Deck -> Maybe (Card, Deck)
-nextCard = undefined
+nextCard deck 
+  | null deck = Nothing
+  | length deck == 1 = Just (head, V.empty)
+  | otherwise = Just (head, tail)
+  where head = deck ! 0
+        tail = V.drop 1 deck
 
 -- Exercise 12 ----------------------------------------
 
 getCards :: Int -> Deck -> Maybe ([Card], Deck)
-getCards = undefined
+getCards n deck = go n deck []
+  where go :: Int -> Deck -> [Card] -> Maybe ([Card], Deck)
+        go n' deck' acc 
+          | n' > length deck' = Nothing 
+          | n' == 0 = Just (acc, deck')
+          | otherwise = do
+            nc <- nextCard deck'
+            go (n' - 1) (snd nc) ((fst nc) : acc)
+
+
+    
 
 -- Exercise 13 ----------------------------------------
 
