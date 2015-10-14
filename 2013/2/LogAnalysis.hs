@@ -17,7 +17,18 @@ parse s = map parseMessage (lines s)
 
 -- Exercise 2 --
 
+getLogMessage :: MessageTree -> LogMessage
+getLogMessage (Node _ msg _) = msg
+getLogMessage Leaf = Unknown
+
+getTimeStamp :: LogMessage -> TimeStamp
+getTimeStamp (LogMessage _ ts _ ) = ts
+getTimeStamp (Unknown _) = undefined 
+
+
+
 insert :: LogMessage -> MessageTree -> MessageTree
 insert Unknown mt = mt
 insert lm (Node mtl msg mtr)
+  | getTimeStamp lm > 
 
