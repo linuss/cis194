@@ -17,10 +17,6 @@ parse s = map parseMessage (lines s)
 
 -- Exercise 2 --
 
-getLogMessage :: MessageTree -> LogMessage
-getLogMessage (Node _ msg _) = msg
-getLogMessage Leaf = Unknown
-
 getTimeStamp :: LogMessage -> TimeStamp
 getTimeStamp (LogMessage _ ts _ ) = ts
 getTimeStamp (Unknown _) = undefined 
@@ -28,7 +24,32 @@ getTimeStamp (Unknown _) = undefined
 
 
 insert :: LogMessage -> MessageTree -> MessageTree
-insert Unknown mt = mt
+insert (Unknown _) mt = mt
+insert lm Leaf = Node Leaf lm Leaf
 insert lm (Node mtl msg mtr)
-  | getTimeStamp lm > 
+  | getTimeStamp lm < getTimeStamp msg = Node (insert lm mtl) msg mtr
+  | getTimeStamp lm >= getTimeStamp msg = Node mtl msg (insert lm mtr)
+insert (LogMessage _ _ _) (Node _ _ _) = error "Unreachable pattern"
+
+-- Exercise 3 --
+build :: [LogMessage] -> MessageTree
+build msgs = go msgs Leaf
+  where go :: [LogMessage] -> MessageTree -> MessageTree
+        go [] tree = tree
+        go (x:xs) tree = go xs (insert x tree)
+
+-- Exercise 4 --
+inOrder :: MessageTree -> [LogMessage]
+inOrder mt = go mt []
+  where go :: MessageTree -> [LogMessage] -> [LogMessage]
+        go Leaf list = list
+        go (Node mtl msg mtr) list = go mtr (go mtl list ++ [msg])
+
+-- Exercise 5 --
+importantError :: LogMessage -> Bool
+importantError (LogMessage (Error n) _ _) = n >= 50
+importantError _ = False
+
+whatWentWrong :: [LogMessage] -> [String]
+whatWentWrong messages = map show $ filter importantError (inOrder $ build messages)
 
