@@ -50,6 +50,10 @@ importantError :: LogMessage -> Bool
 importantError (LogMessage (Error n) _ _) = n >= 50
 importantError _ = False
 
+getString :: LogMessage -> String
+getString (LogMessage _ _ s ) = s
+getString (Unknown s) = s
+
 whatWentWrong :: [LogMessage] -> [String]
-whatWentWrong messages = map show $ filter importantError (inOrder $ build messages)
+whatWentWrong messages = map getString $ filter importantError (inOrder $ build messages)
 
