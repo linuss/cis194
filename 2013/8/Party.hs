@@ -26,9 +26,12 @@ treeFold f (Node a forest) = f a (map (treeFold f) forest)
 
 nextLevel :: Employee -> [(GuestList, GuestList)] -> (GuestList, GuestList)
 nextLevel boss [] = (glCons boss mempty, mempty)
-nextLevel boss guestlists = (glCons boss bestListWithoutBoss,  bestListWithBoss)
-  where bestListWithBoss = maximum $ map fst guestlists
-        bestListWithoutBoss = maximum $ map snd guestlists
+{- To obtain the highest scoring list with the current boss, we combine all the guestlists without the bosses
+ - from the previous level, and add the boss. To obtain the highests scoring list without the current boss,
+ - we combine the guestlists with and without the subbosses, and pick the one that is more fun -}
+nextLevel boss guestlists = (glCons boss listsWithNoSubBoss , (moreFun listsWithSubBoss listsWithNoSubBoss))
+  where listsWithNoSubBoss = foldr mappend mempty (map snd guestlists)
+        listsWithSubBoss =  foldr mappend mempty (map fst guestlists)
 
 {- Exercise 4 -}
 maxFun :: Tree Employee -> GuestList
