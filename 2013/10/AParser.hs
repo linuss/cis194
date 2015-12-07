@@ -64,56 +64,19 @@ first :: (a -> b) -> (a,c) -> (b,c)
 first f (x,y) = (f x, y)
 
 instance Functor Parser where
-  fmap f (Parser s) = Parser (fmap (first f) . s)
+  fmap g p1 = Parser f 
+    where f str = do 
+          parsed <- runParser p1 str
+          return $ first g parsed
 
-{- Exercise 2 -}
+{-- Exercise 2 --}
 
 instance Applicative Parser where
-  pure a = Parser f 
-         where 
-          f str = Just (a, str)
-
-  p1 <*> p2 = Parser f 
+  pure str = Parser (\x -> Just (str, x))
+  p1 <*> p2 = Parser f
     where f str = do
           r1 <- runParser p1 str
           r2 <- runParser p2 (snd r1)
-          return (fst r1 $ fst r2, snd r2)
+          return $ (first f r2, snd r2) 
+      
 
-{- Exercise 3 -}
-
-toTuple :: a -> a -> (a,a)
-toTuple x y = (x,y)
-
-abParser :: Parser (Char, Char)
-abParser = toTuple <$> char 'a' <*> char 'b'
-
-abParser_ :: Parser ()
-abParser_ = (\_ _ -> ()) <$> char 'a' <*> char 'b'
-
-space :: Parser Char 
-space = char ' '
-
-intPair :: Parser [Integer]
-intPair = (\x s y -> [x,y]) <$> posInt <*> space <*> posInt  
-
-{- Exercise 4 -}
-
-instance Alternative Parser where
-  empty = Parser (\_ -> Nothing) 
-  p1 <|> p2 = Parser f
-    where f str = let r1 = runParser p1 str
-                      r2 = runParser p2 str
-                  in (r1 <|> r2)
-
-{- Exercise 5 -}
-intOrUppercase :: Parser ()
-intOrUppercase = const () <$> posInt <|> const () <$> (satisfy isUpper)
-
-
-
-
-
-
-
-
-  
