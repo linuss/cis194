@@ -75,8 +75,31 @@ instance Applicative Parser where
   pure str = Parser (\x -> Just (str, x))
   p1 <*> p2 = Parser f
     where f str = do
-          r1 <- runParser p1 str
-          r2 <- runParser p2 (snd r1)
-          return $ (first f r2, snd r2) 
+          x <- runParser p1 str
+          y <- runParser p2 (snd x)
+          return $ first (fst x) y 
+
+{-- Exercise 3 --}
+abParser :: Parser (Char, Char)
+abParser = (\x y -> (x,y)) <$> (satisfy (=='a')) <*> (satisfy (=='b'))
+
+abParser_ :: Parser ()
+abParser_ = (\_ _ -> ()) <$> (satisfy (=='a')) <*> (satisfy (=='b'))
+
+intPair :: Parser [Integer]
+intPair = (\x y z -> [x,z]) <$> posInt <*> (satisfy (==' ')) <*> posInt
+
+{-- Exercise 4 --}
+
+instance Alternative Parser where
+  empty = Parser (\_ -> Nothing)
+  p1 <|> p2 = Parser f
+    where f str = case runParser p1 str of
+                    Nothing -> runParser p2 str
+                    otherwise -> runParser p1 str
+
+{-- Exercise 5 --}
+intOrUppercase :: Parser ()
+intOrUppercase = ((\_ -> ()) <$> posInt) <|> ((\_ -> ()) <$> (satisfy isUpper))
       
 
